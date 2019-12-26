@@ -180,7 +180,7 @@ public class TestTarjetaCredito extends TestCase {
 	 * Caso de prueba: Realizar una compra por internet con tarjeta bloqueada. Se
 	 * prueba a comprar con una tarjeta con un saldo de 1000, un producto que vale
 	 * 500 pero se introduce el pin mal tres veces por lo que la tarjeta se bloquea
-	 */ 
+	 */ // TENGO DUDAS
 
 	@Test
 	public void testCompraPorInternetTarjetaBloqueada() {
@@ -209,6 +209,12 @@ public class TestTarjetaCredito extends TestCase {
 			} catch (PinInvalidoException e) {
 			}
 			token = tc.comprarPorInternet(tc.getPin(), 500);
+//			assertTrue(tc.getCreditoDisponible() == 1000); ESTO NO LO HACE
+//			tc.confirmarCompraPorInternet(token);
+//			assertTrue(tc.getCreditoDisponible() == 5000);
+//			tc.liquidar();
+//			assertTrue(tc.getCreditoDisponible() == 1000);
+//			assertTrue(cuentaPepe.getSaldo() == 500);
 
 		} catch (TarjetaBloqueadaException e) {
 		} catch (Exception e) {
