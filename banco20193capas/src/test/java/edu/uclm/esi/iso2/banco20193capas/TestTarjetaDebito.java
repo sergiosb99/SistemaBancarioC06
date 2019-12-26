@@ -18,7 +18,7 @@ import edu.uclm.esi.iso2.banco20193capas.exceptions.PinInvalidoException;
 import edu.uclm.esi.iso2.banco20193capas.exceptions.SaldoInsuficienteException;
 import edu.uclm.esi.iso2.banco20193capas.exceptions.TarjetaBloqueadaException;
 import edu.uclm.esi.iso2.banco20193capas.model.Cliente;
-import edu.uclm.esi.iso2.banco20193capas.model.Tarjeta;
+import edu.uclm.esi.iso2.banco20193capas.model.AbstractTarjeta;
 import edu.uclm.esi.iso2.banco20193capas.model.TarjetaDebito;
 import junit.framework.TestCase;
 
