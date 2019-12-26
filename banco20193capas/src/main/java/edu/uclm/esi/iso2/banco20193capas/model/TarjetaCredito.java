@@ -1,6 +1,5 @@
 package edu.uclm.esi.iso2.banco20193capas.model;
 
-import java.security.SecureRandom;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -28,16 +27,18 @@ public class TarjetaCredito extends AbstractTarjeta {
 	 * @throws PinInvalidoException	Si el pin introducido es distinto del pin de la tarjeta
 	 */
 	@Override
-	public void sacarDinero(int pin, double importe) throws ImporteInvalidoException, SaldoInsuficienteException, TarjetaBloqueadaException, PinInvalidoException {
+	public void sacarDinero(final int pin, final double importe) throws ImporteInvalidoException, SaldoInsuficienteException, TarjetaBloqueadaException, PinInvalidoException {
 		comprobar(pin);
 		this.intentos = 0;
-		if (importe>getCreditoDisponible())
+		if (importe>getCreditoDisponible()) {
 			throw new SaldoInsuficienteException();
-		if (importe<=0)
+		}
+		if (importe<=0) {
 			throw new ImporteInvalidoException(importe);
-		MovimientoTarjetaCredito principal = new MovimientoTarjetaCredito(this, importe, "Retirada de efectivo");
+		}
+		final MovimientoTarjetaCredito principal = new MovimientoTarjetaCredito(this, importe, "Retirada de efectivo");
 		double comision = 3;
-		MovimientoTarjetaCredito mComision = new MovimientoTarjetaCredito(this, comision, "Comisión por retirada de efectivo");
+		final MovimientoTarjetaCredito mComision = new MovimientoTarjetaCredito(this, comision, "Comisión por retirada de efectivo");
 		Manager.getMovimientoTarjetaCreditoDAO().save(principal);
 		Manager.getMovimientoTarjetaCreditoDAO().save(mComision);
 	}
@@ -53,18 +54,17 @@ public class TarjetaCredito extends AbstractTarjeta {
 	 * @throws ImporteInvalidoException	Si el importe menor o igual que 0
 	 */
 	@Override
-	public Integer comprarPorInternet(int pin, double importe) throws TarjetaBloqueadaException, PinInvalidoException, SaldoInsuficienteException, ImporteInvalidoException {
+	public Integer comprarPorInternet(final int pin, final double importe) throws TarjetaBloqueadaException, PinInvalidoException, SaldoInsuficienteException, ImporteInvalidoException {
 		comprobar(pin);
 		this.intentos = 0;
-		if (importe>getCreditoDisponible())
+		if (importe>getCreditoDisponible()) {
 			throw new SaldoInsuficienteException();
-		if (importe<=0)
+		}
+		if (importe<=0) {
 			throw new ImporteInvalidoException(importe);
-		SecureRandom dado = new SecureRandom();
-		int token = 0;
-		for (int i=0; i<=3; i++)
-			token = (int) (token  + dado.nextInt(10) * Math.pow(10, i));
-		token = 1234;
+		}
+
+		int token = 1234;
 		this.compra = new Compra(importe, token);
 		return token;
 	}
@@ -79,14 +79,16 @@ public class TarjetaCredito extends AbstractTarjeta {
 	 * @throws PinInvalidoException	Si el pin introducido es incorrecto
 	 */
 	@Override
-	public void comprar(int pin, double importe) throws ImporteInvalidoException, SaldoInsuficienteException, TarjetaBloqueadaException, PinInvalidoException {
+	public void comprar(final int pin, final double importe) throws ImporteInvalidoException, SaldoInsuficienteException, TarjetaBloqueadaException, PinInvalidoException {
 		comprobar(pin);
 		this.intentos = 0;
-		if (importe>getCreditoDisponible())
+		if (importe>getCreditoDisponible()) {
 			throw new SaldoInsuficienteException();
-		if (importe<=0)
+		}
+		if (importe<=0) {
 			throw new ImporteInvalidoException(importe);
-		MovimientoTarjetaCredito principal = new MovimientoTarjetaCredito(this, importe, "Retirada de efectivo");
+		}
+		final MovimientoTarjetaCredito principal = new MovimientoTarjetaCredito(this, importe, "Retirada de efectivo");
 		Manager.getMovimientoTarjetaCreditoDAO().save(principal);
 	}
 	
@@ -98,12 +100,12 @@ public class TarjetaCredito extends AbstractTarjeta {
 	
 	public void liquidar() {
 		double gastos = 0.0;
-		List<MovimientoTarjetaCredito> mm = Manager.getMovimientoTarjetaCreditoDAO().findByTarjetaId(this.id);
-		for (MovimientoTarjetaCredito m : mm) {
-			if (!m.isLiquidado()) {
-				gastos = gastos+m.getImporte();
-				m.setLiquidado(true);
-				Manager.getMovimientoTarjetaCreditoDAO().save(m);
+		final List<MovimientoTarjetaCredito> mmcredito = Manager.getMovimientoTarjetaCreditoDAO().findByTarjetaId(this.id);
+		for (final MovimientoTarjetaCredito mcredito : mmcredito) {
+			if (!mcredito.isLiquidado()) {
+				gastos = gastos+mcredito.getImporte();
+				mcredito.setLiquidado(true);
+				Manager.getMovimientoTarjetaCreditoDAO().save(mcredito);
 			}
 		}
 		this.cuenta.retiroForzoso(gastos, "Liquidación de tarjeta de crédito");
@@ -115,21 +117,24 @@ public class TarjetaCredito extends AbstractTarjeta {
 	
 	public Double getCreditoDisponible() {
 		double gastos = 0.0;
-		List<MovimientoTarjetaCredito> mm = Manager.getMovimientoTarjetaCreditoDAO().findByTarjetaId(this.id);
-		for (MovimientoTarjetaCredito m : mm)
-			if (!m.isLiquidado())
-				gastos = gastos + m.getImporte();
+		final List<MovimientoTarjetaCredito> mmtarjeta = Manager.getMovimientoTarjetaCreditoDAO().findByTarjetaId(this.id);
+		for (final MovimientoTarjetaCredito mtarjeta : mmtarjeta) {
+			if (!mtarjeta.isLiquidado()) {
+				gastos = gastos + mtarjeta.getImporte();
+			}
+		}
 		return credito - gastos;
 	}
 
-	public void setCredito(Double credito) {
+	public void setCredito(final Double credito) {
 		this.credito = credito;
 	}
 
 	@Override
-	public void cambiarPin(int pinViejo, int pinNuevo) throws PinInvalidoException {
-		if (this.pin!=pinViejo)
+	public void cambiarPin(final int pinViejo, final int pinNuevo) throws PinInvalidoException {
+		if (this.pin!=pinViejo) {
 			throw new PinInvalidoException();
+		}
 		this.pin = pinNuevo;
 		Manager.getTarjetaCreditoDAO().save(this);
 	}
