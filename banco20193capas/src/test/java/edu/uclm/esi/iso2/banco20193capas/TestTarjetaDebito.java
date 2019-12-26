@@ -94,40 +94,45 @@ public class TestTarjetaDebito extends TestCase {
 		}
 
 	}
+	/*
+	 * Caso de prueba: Realizar una compra por internet con tarjeta bloqueada. Se
+	 * prueba a comprar con una tarjeta con un saldo de 1000, un producto que vale
+	 * 500 pero se introduce el pin mal tres veces por lo que la tarjeta se bloquea
+	 */ 
 
-	/*
-	 * Caso de prueba: Realizar una compra por internet cuyo importe sea superior al
-	 * saldo disponible Se prueba a comprar con una tarjeta con un saldo de 1000, un
-	 * producto que vale 1001
-	 */
-	/*
-	 * @Test public void testCompraPorInternetImporteMayorSaldoDisponible() {
-	 * 
-	 * try { cuentaPepe.addTitular(pepe); cuentaPepe.insert();
-	 * cuentaPepe.ingresar(1000);
-	 * 
-	 * TarjetaDebito td = cuentaPepe.emitirTarjetaDebito("12345X");
-	 * td.comprarPorInternet(td.getPin(), 1001);
-	 * fail("Esperaba SaldoInsuficienteException"); } catch
-	 * (SaldoInsuficienteException e) { } catch (Exception e) {
-	 * fail("Excepción inesperada: " + e.getMessage()); } }
-	 */
+	@Test
+	public void testCompraPorInternetTarjetaBloqueada() {
 
-	/*
-	 * Caso de prueba: Realizar una compra por internet cuyo importe sea inferior a
-	 * cero Se prueba a comprar con una tarjeta con un saldo de 1000, un producto
-	 * que vale -1
-	 */
-	/*
-	 * @Test public void testCompraPorInternetImporteMenorCero() { try {
-	 * cuentaPepe.addTitular(pepe); cuentaPepe.insert(); cuentaPepe.ingresar(1000);
-	 * 
-	 * TarjetaDebito td = cuentaPepe.emitirTarjetaDebito("12345X");
-	 * td.comprarPorInternet(td.getPin(), -1);
-	 * fail("Esperaba ImporteInvalidoException"); } catch (ImporteInvalidoException
-	 * e) { } catch (Exception e) { fail("Excepción inesperada: " + e.getMessage());
-	 * } }
-	 */
+		try {
+
+			cuentaPepe.addTitular(pepe);
+			cuentaPepe.insert();
+			cuentaPepe.ingresar(1000);
+
+			TarjetaDebito td = cuentaPepe.emitirTarjetaDebito("12345X");
+			int token;
+			try {
+				token = td.comprarPorInternet(1, 500);
+				fail("Esperaba PinInvalidoException");
+			} catch (PinInvalidoException e) {
+			}
+			try {
+				token = td.comprarPorInternet(1, 500);
+				fail("Esperaba PinInvalidoException");
+			} catch (PinInvalidoException e) {
+			}
+			try {
+				token = td.comprarPorInternet(1, 500);
+				fail("Esperaba PinInvalidoException");
+			} catch (PinInvalidoException e) {
+			}
+			token = td.comprarPorInternet(td.getPin(), 500);
+
+		} catch (TarjetaBloqueadaException e) {
+		} catch (Exception e) {
+			fail("Excepción inesperada: " + e.getMessage());
+		}
+	}
 	/* TEST COMPRAR */
 
 	/*
