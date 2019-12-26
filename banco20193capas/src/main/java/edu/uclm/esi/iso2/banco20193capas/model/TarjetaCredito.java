@@ -11,7 +11,7 @@ import edu.uclm.esi.iso2.banco20193capas.exceptions.SaldoInsuficienteException;
 import edu.uclm.esi.iso2.banco20193capas.exceptions.TarjetaBloqueadaException;
 
 @Entity
-public class TarjetaCredito extends Tarjeta {
+public class TarjetaCredito extends AbstractTarjeta {
 	private Double credito;
 	
 	public TarjetaCredito() {
