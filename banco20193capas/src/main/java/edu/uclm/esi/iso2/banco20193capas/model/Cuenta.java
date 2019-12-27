@@ -24,7 +24,7 @@ import edu.uclm.esi.iso2.banco20193capas.exceptions.SaldoInsuficienteException;
 */
 @Entity
 public class Cuenta {
-	@Id 
+	@Id
 	protected Long id;
 
 	@ManyToMany(fetch = FetchType.EAGER)
@@ -36,12 +36,12 @@ public class Cuenta {
 		this.titulares=new ArrayList<>();
 	}
 	
-	public Cuenta(Long id) {
+	public Cuenta(final Long id) {
 		this();
 		this.id=id;
 	}
 	
-	public Cuenta(Integer id) {
+	public Cuenta(final Integer id) {
 		this(Long.valueOf(id));
 	}
 	
@@ -50,9 +50,10 @@ public class Cuenta {
 	 * @param cliente El cliente que se añade a la lista de titulares
 	 * @throws CuentaYaCreadaException Si la cuenta ya se ha almacenado en la base de datos
 	 */
-	public void addTitular(Cliente cliente) throws CuentaYaCreadaException {
-		if (creada)
+	public void addTitular(final Cliente cliente) throws CuentaYaCreadaException {
+		if (creada) {
 			throw new CuentaYaCreadaException();
+		}	
 		this.titulares.add(cliente);
 	}
 	
@@ -61,14 +62,15 @@ public class Cuenta {
 	 * @param importe	El importe que se ingresa
 	 * @throws ImporteInvalidoException	Si el importe es menor o igual que 0
 	 */
-	public void ingresar(double importe) throws ImporteInvalidoException {
+	public void ingresar(final double importe) throws ImporteInvalidoException {
 		this.ingresar(importe, "Ingreso de efectivo");
 	}
 
-	private void ingresar(double importe, String concepto) throws ImporteInvalidoException {
-		if (importe<=0)
+	private void ingresar(final double importe,final String concepto) throws ImporteInvalidoException {
+		if (importe<=0) {
 			throw new ImporteInvalidoException(importe);
-		MovimientoCuenta movimiento = new MovimientoCuenta(this, importe, concepto);
+		}	
+		final MovimientoCuenta movimiento = new MovimientoCuenta(this, importe, concepto);
 		Manager.getMovimientoDAO().save(movimiento);
 	}
 	
@@ -78,16 +80,18 @@ public class Cuenta {
 	 * @throws ImporteInvalidoException	Si el importe es menor o igual que 0
 	 * @throws SaldoInsuficienteException	Si el importe menor que getSaldo()
 	 */
-	public void retirar(double importe) throws ImporteInvalidoException, SaldoInsuficienteException {
+	public void retirar(final double importe) throws ImporteInvalidoException, SaldoInsuficienteException {
 		this.retirar(importe, "Retirada de efectivo");
 	}
 		
-	private void retirar(double importe, String concepto) throws ImporteInvalidoException, SaldoInsuficienteException {
-		if (importe<=0)
+	private void retirar(final double importe,final String concepto) throws ImporteInvalidoException, SaldoInsuficienteException {
+		if (importe<=0) {
 			throw new ImporteInvalidoException(importe);
-		if (importe>getSaldo())
+		}
+		if (importe>getSaldo()) {
 			throw new SaldoInsuficienteException();
-		MovimientoCuenta movimiento = new MovimientoCuenta(this, -importe, concepto);
+		}	
+		final MovimientoCuenta movimiento = new MovimientoCuenta(this, -importe, concepto);
 		Manager.getMovimientoDAO().save(movimiento);
 	}
 
@@ -96,35 +100,37 @@ public class Cuenta {
 	 * @param importe	El importe que se retira
 	 * @param concepto	El concepto del movimiento
 	 */
-	public void retiroForzoso(double importe, String concepto) {
-		MovimientoCuenta movimiento = new MovimientoCuenta(this, -importe, concepto);
+	public void retiroForzoso(final double importe,final String concepto) {
+		final MovimientoCuenta movimiento = new MovimientoCuenta(this, -importe, concepto);
 		Manager.getMovimientoDAO().save(movimiento);
 	}
 	
 	/**
 	 * Realiza una transferencia desde esta cuenta a la cuenta que se pasa como primer parámetro.
 	 * Se cobra una comisión del 1%, con un mínimo de 1.5 euros
-	 * @param numeroCuentaDestino	El id de la cuenta destino
+	 * @param numCuentaDestino	El id de la cuenta destino
 	 * @param importe				El importe que se transfiere
 	 * @param concepto				El concepto de la transferencia
 	 * @throws CuentaInvalidaException	Si la cuenta destino es esta misma o no existe en la BD
 	 * @throws ImporteInvalidoException	Si el importe es menor o igual que 0
 	 * @throws SaldoInsuficienteException	Si la cuenta no tiene saldo suficiente para afrontar el importe y la comisión
 	 */
-	public void transferir(Long numeroCuentaDestino, double importe, String concepto) throws CuentaInvalidaException, ImporteInvalidoException, SaldoInsuficienteException {
-		if (this.getId().equals(numeroCuentaDestino))
-			throw new CuentaInvalidaException(numeroCuentaDestino);
+	public void transferir(final Long numCuentaDestino,final double importe,final String concepto) throws CuentaInvalidaException, ImporteInvalidoException, SaldoInsuficienteException {
+		if (this.getId().equals(numCuentaDestino)) {
+			throw new CuentaInvalidaException(numCuentaDestino);
+		}
 		this.retirar(importe, "Transferencia emitida");
-		double comision = Math.max(0.01*importe, 1.5);
+		final double comision = Math.max(0.01*importe, 1.5);
 		this.retirar(comision, "Comisión por transferencia");
-		Cuenta destino = this.load(numeroCuentaDestino);
+		final Cuenta destino = this.load(numCuentaDestino);
 		destino.ingresar(importe, "Transferencia recibida");
 	}
 	
-	private Cuenta load(Long numero) throws CuentaInvalidaException {
-		Optional<Cuenta> optCuenta = Manager.getCuentaDAO().findById(numero);
-		if (!optCuenta.isPresent())
+	private Cuenta load(final Long numero) throws CuentaInvalidaException {
+		final Optional<Cuenta> optCuenta = Manager.getCuentaDAO().findById(numero);
+		if (!optCuenta.isPresent()) {
 			throw new CuentaInvalidaException(numero);
+		}	
 		return optCuenta.get();
 	}
 
@@ -133,10 +139,11 @@ public class Cuenta {
 	 * @return	El saldo de la cuenta
 	 */
 	public double getSaldo() {
-		List<MovimientoCuenta> mm = Manager.getMovimientoDAO().findByCuentaId(this.id);
+		final List<MovimientoCuenta> movimiento = Manager.getMovimientoDAO().findByCuentaId(this.id);
 		double saldo = 0.0;
-		for (MovimientoCuenta m : mm)
+		for (final MovimientoCuenta m : movimiento) {
 			saldo = saldo + m.getImporte();
+		}
 		return saldo;
 	}
 
@@ -145,8 +152,9 @@ public class Cuenta {
 	 * @throws CuentaSinTitularesException	Si no se ha asignado ningún titular a la cuenta
 	 */
 	public void insert() throws CuentaSinTitularesException {
-		if (this.titulares.isEmpty())
+		if (this.titulares.isEmpty()) {
 			throw new CuentaSinTitularesException();
+		}
 		this.creada = true;
 		Manager.getCuentaDAO().save(this);
 	}
@@ -158,21 +166,24 @@ public class Cuenta {
 	 * @throws ClienteNoEncontradoException	Si el cliente no está en la base de datos
 	 * @throws ClienteNoAutorizadoException	Si el cliente no es titular de esta cuenta
 	 */
-	public TarjetaDebito emitirTarjetaDebito(String nif) throws ClienteNoEncontradoException, ClienteNoAutorizadoException {
-		Optional<Cliente> optCliente = Manager.getClienteDAO().findByNif(nif);
-		if (!optCliente.isPresent())
+	public TarjetaDebito emitirTarjetaDebito(final String nif) throws ClienteNoEncontradoException, ClienteNoAutorizadoException {
+		final Optional<Cliente> optCliente = Manager.getClienteDAO().findByNif(nif);
+		if (!optCliente.isPresent()) {
 			throw new ClienteNoEncontradoException(nif);
-		Cliente cliente = optCliente.get();
+		}	
+		final Cliente cliente = optCliente.get();
 		boolean encontrado = false;
-		for (Cliente titular : this.titulares)
+		for (final Cliente titular : this.titulares) {
 			if (titular.getNif().equals(cliente.nif)) {
 				encontrado = true;
 				break;
 			}
-
-		if (!encontrado)
+		}
+			
+		if (!encontrado) {
 			throw new ClienteNoAutorizadoException(nif, this.id);
-		TarjetaDebito tarjeta = new TarjetaDebito();
+		}
+		final TarjetaDebito tarjeta = new TarjetaDebito();
 		tarjeta.setCuenta(this);
 		tarjeta.setTitular(cliente);
 		Manager.getTarjetaDebitoDAO().save(tarjeta);
@@ -187,20 +198,24 @@ public class Cuenta {
 	 * @throws ClienteNoEncontradoException	Si el cliente no está en la base de datos
 	 * @throws ClienteNoAutorizadoException	Si el cliente no es titular de esta cuenta
 	 */
-	public TarjetaCredito emitirTarjetaCredito(String nif, double credito) throws ClienteNoEncontradoException, ClienteNoAutorizadoException {
-		Optional<Cliente> optCliente = Manager.getClienteDAO().findByNif(nif);
-		if (!optCliente.isPresent())
+	public TarjetaCredito emitirTarjetaCredito(final String nif,final double credito) throws ClienteNoEncontradoException, ClienteNoAutorizadoException {
+		final Optional<Cliente> optCliente = Manager.getClienteDAO().findByNif(nif);
+		if (!optCliente.isPresent()) {
 			throw new ClienteNoEncontradoException(nif);
-		Cliente cliente = optCliente.get();
+		}
+		final Cliente cliente = optCliente.get();
 		boolean encontrado = false;
-		for (Cliente titular : this.titulares)
+		for (final Cliente titular : this.titulares) {
 			if (titular.getNif().equals(cliente.nif)) {
 				encontrado = true;
 				break;
 			}
-		if (!encontrado)
+		}
+			
+		if (!encontrado) {
 			throw new ClienteNoAutorizadoException(nif, this.id);
-		TarjetaCredito tarjeta = new TarjetaCredito();
+		}
+		final TarjetaCredito tarjeta = new TarjetaCredito();
 		tarjeta.setCuenta(this);
 		tarjeta.setTitular(cliente);
 		tarjeta.setCredito(credito);
@@ -212,7 +227,7 @@ public class Cuenta {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(final Long id) {
 		this.id = id;
 	}
 
@@ -220,7 +235,7 @@ public class Cuenta {
 		return titulares;
 	}
 
-	public void setTitulares(List<Cliente> titulares) {
+	public void setTitulares(final List<Cliente> titulares) {
 		this.titulares = titulares;
 	}
 
@@ -228,7 +243,7 @@ public class Cuenta {
 		return creada;
 	}
 
-	public void setCreada(boolean creada) {
+	public void setCreada(final boolean creada) {
 		this.creada = creada;
 	}
 }
